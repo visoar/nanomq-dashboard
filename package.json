@@ -1,0 +1,38 @@
+{
+  "name": "nanomq-dashboard",
+  "version": "1.0.0",
+  "description": "A comprehensive dashboard for NanoMQ MQTT broker management",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.9",
+    "@tailwindcss/postcss": "^4.0.9",
+    "apexcharts": "^4.3.0",
+    "autoprefixer": "^10.4.20",
+    "axios": "^1.6.0",
+    "next": "15.2.3",
+    "react": "^19.0.0",
+    "react-apexcharts": "^1.7.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^2.6.0",
+    "lucide-react": "^0.263.1",
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@svgr/webpack": "^8.1.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.3",
+    "postcss": "^8",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5"
+  }
+}
