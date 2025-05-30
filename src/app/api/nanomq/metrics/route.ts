@@ -139,16 +139,17 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    if (error.code === 'ETIMEDOUT') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ETIMEDOUT') {
       return NextResponse.json(
         { error: '连接超时，请检查网络连接' },
         { status: 408 }
       );
     }
     
-    if (error.response) {
-      const status = error.response.status;
-      const message = error.response.data?.error || error.response.data?.message || '获取指标失败';
+    if (error && typeof error === 'object' && 'response' in error && error.response) {
+      const response = error.response as { status: number; data?: { error?: string; message?: string } };
+      const status = response.status;
+      const message = response.data?.error || response.data?.message || '获取指标失败';
       
       if (status === 401) {
         return NextResponse.json(

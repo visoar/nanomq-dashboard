@@ -127,7 +127,7 @@ async function handleRequest(
       return NextResponse.json(
         {
           error: 'Internal Server Error',
-          message: error.message,
+          message: error instanceof Error ? error.message : 'Unknown error',
         },
         { status: 500 }
       );

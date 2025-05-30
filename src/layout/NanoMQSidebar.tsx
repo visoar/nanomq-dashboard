@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import { useNanoMQ } from "../context/NanoMQContext";
@@ -10,14 +9,11 @@ import {
   Activity,
   BarChart3,
   Database,
-  Globe,
   Home,
   MessageSquare,
-  Monitor,
   Network,
   Settings,
   Users,
-  Wifi,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
@@ -98,16 +94,16 @@ const NanoMQSidebar: React.FC = () => {
 
   const isItemExpanded = (itemName: string) => expandedItems.includes(itemName);
 
-  const isActiveItem = (path: string) => {
+  const isActiveItem = useCallback((path: string) => {
     if (path === '/') {
       return pathname === '/';
     }
     return pathname.startsWith(path);
-  };
+  }, [pathname]);
 
-  const hasActiveSubItem = (subItems?: { path: string }[]) => {
+  const hasActiveSubItem = useCallback((subItems?: { path: string }[]) => {
     return subItems?.some(item => isActiveItem(item.path)) || false;
-  };
+  }, [isActiveItem]);
 
   // 自动展开包含当前路径的菜单项
   useEffect(() => {
@@ -118,7 +114,7 @@ const NanoMQSidebar: React.FC = () => {
         );
       }
     });
-  }, [pathname]);
+  }, [pathname, hasActiveSubItem]);
 
   return (
     <>

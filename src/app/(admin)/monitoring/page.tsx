@@ -358,7 +358,7 @@ const MonitorPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <SimpleChart data={cpuHistory} color="#3B82F6" label="CPU" unit="%" />
+            <SimpleChart data={cpuHistory} color="#3B82F6" unit="%" />
           </div>
 
           {/* 内存使用率 */}
@@ -379,7 +379,7 @@ const MonitorPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <SimpleChart data={memoryHistory} color="#10B981" label="Memory" unit="%" />
+            <SimpleChart data={memoryHistory} color="#10B981" unit="%" />
           </div>
 
           {/* 连接数 */}
@@ -397,7 +397,7 @@ const MonitorPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <SimpleChart data={connectionsHistory} color="#8B5CF6" label="Connections" />
+            <SimpleChart data={connectionsHistory} color="#8B5CF6" />
           </div>
 
           {/* 消息统计 */}
@@ -415,7 +415,7 @@ const MonitorPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <SimpleChart data={messagesHistory} color="#F59E0B" label="Messages" />
+            <SimpleChart data={messagesHistory} color="#F59E0B" />
           </div>
         </div>
       )}

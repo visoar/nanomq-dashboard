@@ -3,7 +3,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
 // API 响应类型定义
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   code: number;
   data: T;
 }
@@ -47,9 +47,37 @@ export interface SubscriptionInfo {
 
 // 统计信息类型
 export interface MetricsInfo {
-  metrics: any[];
-  cpuinfo: string;
-  memory: string;
+  // CPU 和内存信息
+  cpu_usage?: number;
+  memory_usage?: number;
+  memory_total?: number;
+  cpuinfo?: string;
+  memory?: string;
+  
+  // 连接和订阅统计
+  connections_count?: number;
+  connections_max?: number;
+  subscriptions_count?: number;
+  subscriptions_max?: number;
+  
+  // 消息统计
+  messages_received?: number;
+  messages_sent?: number;
+  messages_dropped?: number;
+  messages_retained?: number;
+  
+  // 字节统计
+  bytes_received?: number;
+  bytes_sent?: number;
+  
+  // 运行时间
+  uptime?: number;
+  
+  // 时间戳
+  timestamp?: number;
+  
+  // 原始 metrics 数据（兼容性）
+  metrics?: Record<string, unknown>[];
 }
 
 // 发布消息参数类型
@@ -74,7 +102,7 @@ export interface ApiEndpoint {
 class NanoMQAPI {
   private client: AxiosInstance;
   private baseURL: string;
-  private authConfig: any = null;
+  private authConfig: { baseURL: string; username: string; password: string } | null = null;
 
   constructor() {
     // 使用 Next.js API 路由作为代理
@@ -217,31 +245,31 @@ class NanoMQAPI {
   }
 
   // 发布消息
-  async publishMessage(message: PublishMessage): Promise<any> {
+  async publishMessage(message: PublishMessage): Promise<ApiResponse> {
     const response = await this.client.post('/mqtt/publish', message);
     return response.data;
   }
 
   // 获取主题树
-  async getTopicTree(): Promise<any> {
+  async getTopicTree(): Promise<Record<string, unknown>> {
     const response = await this.client.get('/topic-tree');
     return response.data.data;
   }
 
   // 获取配置
-  async getConfiguration(): Promise<any> {
+  async getConfiguration(): Promise<Record<string, unknown>> {
     const response = await this.client.get('/configuration');
     return response.data;
   }
 
   // 设置配置
-  async setConfiguration(config: any): Promise<any> {
+  async setConfiguration(config: Record<string, unknown>): Promise<ApiResponse> {
     const response = await this.client.post('/configuration', config);
     return response.data;
   }
 
   // 控制 Broker（停止或重启）
-  async controlBroker(action: 'stop' | 'restart'): Promise<any> {
+  async controlBroker(action: 'stop' | 'restart'): Promise<ApiResponse> {
     const response = await this.client.post(`/ctrl/${action}`);
     return response.data;
   }

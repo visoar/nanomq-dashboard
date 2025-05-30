@@ -161,6 +161,7 @@ const QuickActions: React.FC = () => {
 };
 
 export default function Dashboard() {
+  const router = useRouter();
   const {
     clients,
     subscriptions,

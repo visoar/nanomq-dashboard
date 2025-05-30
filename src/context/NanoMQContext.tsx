@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { nanomqAPI, BrokerInfo, NodeInfo, ClientInfo, SubscriptionInfo, MetricsInfo } from '@/lib/nanomq-api';
 import { useAuth } from './AuthContext';
 
@@ -58,7 +58,7 @@ export const NanoMQProvider: React.FC<NanoMQProviderProps> = ({ children }) => {
   }, [isAuthenticated, config]);
 
   // 测试连接
-  const testConnection = async (): Promise<boolean> => {
+  const testConnection = useCallback(async (): Promise<boolean> => {
     setIsLoading(true);
     setConnectionStatus('connecting');
     setError(null);
@@ -82,50 +82,50 @@ export const NanoMQProvider: React.FC<NanoMQProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // 刷新 Broker 信息
-  const refreshBrokerInfo = async () => {
+  const refreshBrokerInfo = useCallback(async () => {
     try {
       const data = await nanomqAPI.getBrokerInfo();
       setBrokerInfo(data[0] || null);
     } catch (err) {
       console.error('Failed to fetch broker info:', err);
     }
-  };
+  }, []);
 
   // 刷新节点信息
-  const refreshNodeInfo = async () => {
+  const refreshNodeInfo = useCallback(async () => {
     try {
       const data = await nanomqAPI.getNodeInfo();
       setNodeInfo(data[0] || null);
     } catch (err) {
       console.error('Failed to fetch node info:', err);
     }
-  };
+  }, []);
 
   // 刷新客户端信息
-  const refreshClients = async () => {
+  const refreshClients = useCallback(async () => {
     try {
       const data = await nanomqAPI.getClients();
       setClients(data);
     } catch (err) {
       console.error('Failed to fetch clients:', err);
     }
-  };
+  }, []);
 
   // 刷新订阅信息
-  const refreshSubscriptions = async () => {
+  const refreshSubscriptions = useCallback(async () => {
     try {
       const data = await nanomqAPI.getSubscriptions();
       setSubscriptions(data);
     } catch (err) {
       console.error('Failed to fetch subscriptions:', err);
     }
-  };
+  }, []);
 
   // 刷新统计信息
-  const refreshMetrics = async () => {
+  const refreshMetrics = useCallback(async () => {
     try {
       const data = await nanomqAPI.getMetrics();
       setMetrics(data);
@@ -143,10 +143,10 @@ export const NanoMQProvider: React.FC<NanoMQProviderProps> = ({ children }) => {
       const errorMessage = err instanceof Error ? err.message : '获取统计信息失败';
       setError(errorMessage);
     }
-  };
+  }, [isConnected]);
 
   // 刷新所有数据
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     setIsLoading(true);
     try {
       // 先测试连接
@@ -169,14 +169,14 @@ export const NanoMQProvider: React.FC<NanoMQProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [testConnection, refreshBrokerInfo, refreshNodeInfo, refreshClients, refreshSubscriptions, refreshMetrics]);
 
   // 初始化时测试连接
   useEffect(() => {
     if (isAuthenticated && config) {
       testConnection();
     }
-  }, [isAuthenticated, config]);
+  }, [isAuthenticated, config, testConnection]);
 
 
 
@@ -189,7 +189,7 @@ export const NanoMQProvider: React.FC<NanoMQProviderProps> = ({ children }) => {
       const interval = setInterval(refreshData, 30000); // 每30秒刷新一次
       return () => clearInterval(interval);
     }
-  }, [isConnected]);
+  }, [isConnected, refreshData]);
 
   const value: NanoMQContextType = {
     // 连接状态

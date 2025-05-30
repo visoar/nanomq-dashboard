@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         {
           error: '无法连接到 NanoMQ 服务器',
           message: '请检查服务器地址和网络连接',
-          details: error.message,
+          details: error instanceof Error ? error.message : 'Unknown error',
         },
         { status: 503 }
       );
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: '测试连接时发生错误',
-          message: error.message,
+          message: error instanceof Error ? error.message : 'Unknown error',
         },
         { status: 500 }
       );

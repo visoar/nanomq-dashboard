@@ -3,7 +3,7 @@ import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import { useSidebar } from "@/context/SidebarContext";
 import { useAuth } from "@/context/AuthContext";
 import { useNanoMQ } from "@/context/NanoMQContext";
-import { LogOut, Wifi, WifiOff, AlertCircle } from "lucide-react";
+import { LogOut, Wifi, WifiOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -12,8 +12,8 @@ const AppHeader: React.FC = () => {
   const [isUserMenuOpen, setUserMenuOpen] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
-  const { logout, authConfig } = useAuth();
-  const { isConnected, isLoading, error } = useNanoMQ();
+  const { logout, config } = useAuth();
+  const { isConnected, isLoading } = useNanoMQ();
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -149,15 +149,15 @@ const AppHeader: React.FC = () => {
             >
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
-                  {authConfig?.username?.charAt(0).toUpperCase() || 'U'}
+                  {config?.username?.charAt(0).toUpperCase() || 'U'}
                 </span>
               </div>
               <div className="hidden sm:block text-left">
                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {authConfig?.username || 'User'}
+                  {config?.username || 'User'}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {authConfig?.baseURL || 'NanoMQ'}
+                  {config?.baseURL || 'NanoMQ'}
                 </p>
               </div>
             </button>
@@ -167,10 +167,10 @@ const AppHeader: React.FC = () => {
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
                 <div className="p-3 border-b border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {authConfig?.username}
+                    {config?.username}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {authConfig?.baseURL}
+                    {config?.baseURL}
                   </p>
                 </div>
                 <div className="p-1">
