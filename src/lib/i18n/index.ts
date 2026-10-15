@@ -3,7 +3,7 @@ import en from "./en.json";
 export type Locale = "zh-CN" | "en";
 export type MessageValues = Record<string, string | number>;
 export const LOCALE_COOKIE = "nanomq-language";
-const english = en as Record<string, string>;
+const english = new Map<string, string>(Object.entries(en));
 
 export function isLocale(value: unknown): value is Locale {
   return value === "zh-CN" || value === "en";
@@ -29,7 +29,7 @@ export function translate(
   key: string,
   values: MessageValues = {},
 ) {
-  const text = locale === "en" ? (english[key] ?? key) : key;
+  const text = locale === "en" ? (english.get(key) ?? key) : key;
   return text.replace(/\{(\w+)\}/g, (token, name: string) =>
     Object.hasOwn(values, name) ? String(values[name]) : token,
   );

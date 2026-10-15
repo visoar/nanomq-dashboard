@@ -48,6 +48,8 @@ describe("translations", () => {
       translate("en", "管理桥接订阅 {name}", { name: "edge-{name}" }),
     ).toBe("Manage bridge subscriptions edge-{name}");
     expect(translate("en", "MQTT 5.0")).toBe("MQTT 5.0");
+    expect(translate("en", "constructor")).toBe("constructor");
+    expect(errorMessage("zh-CN", "toString")).toBe("toString");
   });
 });
 describe("localized diagnostics", () => {
