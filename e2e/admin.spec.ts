@@ -60,10 +60,9 @@ test("creates, edits, disables, enables and deletes a real republish rule", asyn
   const config = await (
     await page.request.get("/api/nanomq/configuration/basic")
   ).json();
-  const server = String(config.data.basic.url).replace(
-    "nmq-tcp://",
-    "mqtt-tcp://",
-  );
+  const server = String(config.data.basic.url)
+    .replace("nmq-tcp://", "mqtt-tcp://")
+    .replace("://0.0.0.0:", "://127.0.0.1:");
   await page
     .getByLabel("SQL", { exact: true })
     .fill(`SELECT * FROM "${source}"`);
