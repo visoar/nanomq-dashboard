@@ -2,6 +2,7 @@
 import { Pencil, Plus, Power, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Empty, Modal, Notice, PageTitle, Panel } from "@/components/ui";
+import { useI18n } from "@/context/language";
 import { message, mutate } from "@/lib/api";
 import {
   createRuleSchema,
@@ -13,6 +14,7 @@ import { useResource } from "@/lib/use-resource";
 
 const schema = ruleSchema.array();
 export default function Rules() {
+  const { t, errorText } = useI18n();
   const {
     data,
     error: loadError,
@@ -83,12 +85,12 @@ export default function Rules() {
   return (
     <>
       <PageTitle
-        title="规则引擎"
+        title={t("规则引擎")}
         action={
           <div className="button-group">
             <button type="button" className="button" onClick={reload}>
               <RefreshCw size={15} />
-              刷新
+              {t("刷新")}
             </button>
             <button
               type="button"
@@ -97,7 +99,7 @@ export default function Rules() {
               onClick={() => edit("new")}
             >
               <Plus size={15} />
-              创建规则
+              {t("创建规则")}
             </button>
           </div>
         }
@@ -105,13 +107,13 @@ export default function Rules() {
       {loadError && (
         <Notice error>
           {loadError.includes("111")
-            ? "当前 Broker 未启用规则引擎。"
-            : loadError}
+            ? t("当前 Broker 未启用规则引擎。")
+            : errorText(loadError)}
         </Notice>
       )}
       <Panel>
         {loading ? (
-          <Empty title="正在读取规则" text="" />
+          <Empty title={t("正在读取规则")} text="" />
         ) : data?.length ? (
           <div className="table-scroll">
             <table>
@@ -119,9 +121,9 @@ export default function Rules() {
                 <tr>
                   <th>ID</th>
                   <th>SQL</th>
-                  <th>动作</th>
-                  <th>状态</th>
-                  <th>操作</th>
+                  <th>{t("动作")}</th>
+                  <th>{t("状态")}</th>
+                  <th>{t("操作")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -138,7 +140,7 @@ export default function Rules() {
                       <span
                         className={`badge ${rule.enabled ? "green" : "neutral"}`}
                       >
-                        {rule.enabled ? "已启用" : "已停用"}
+                        {rule.enabled ? t("已启用") : t("已停用")}
                       </span>
                     </td>
                     <td>
@@ -146,7 +148,7 @@ export default function Rules() {
                         <button
                           type="button"
                           className="icon-button"
-                          aria-label={`编辑规则 ${rule.id}`}
+                          aria-label={t("编辑规则 {id}", { id: rule.id })}
                           onClick={() => edit(rule)}
                         >
                           <Pencil size={15} />
@@ -154,14 +156,17 @@ export default function Rules() {
                         <button
                           type="button"
                           className="icon-button"
-                          aria-label={`${rule.enabled ? "停用" : "启用"}规则 ${rule.id}`}
+                          aria-label={t(
+                            rule.enabled ? "停用规则 {id}" : "启用规则 {id}",
+                            { id: rule.id },
+                          )}
                           onClick={() => {
                             setError("");
                             setPending({
                               path: `/rules/rule:${rule.id}`,
                               method: "PUT",
                               body: { enabled: !rule.enabled },
-                              title: `${rule.enabled ? "停用" : "启用"}规则`,
+                              title: rule.enabled ? "停用规则" : "启用规则",
                             });
                           }}
                         >
@@ -170,7 +175,7 @@ export default function Rules() {
                         <button
                           type="button"
                           className="icon-button danger-text"
-                          aria-label={`删除规则 ${rule.id}`}
+                          aria-label={t("删除规则 {id}", { id: rule.id })}
                           onClick={() => {
                             setError("");
                             setPending({
@@ -190,15 +195,15 @@ export default function Rules() {
             </table>
           </div>
         ) : (
-          <Empty title="暂无规则" text="" />
+          <Empty title={t("暂无规则")} text="" />
         )}
       </Panel>
       {editing && !pending && (
         <Modal
-          title={editing === "new" ? "创建规则" : "编辑规则"}
+          title={editing === "new" ? t("创建规则") : t("编辑规则")}
           onClose={() => setEditing(null)}
         >
-          {error && <Notice error>{error}</Notice>}
+          {error && <Notice error>{errorText(error)}</Notice>}
           <label>
             SQL
             <textarea
@@ -217,13 +222,13 @@ export default function Rules() {
                 checked={replaceAction}
                 onChange={(e) => setReplaceAction(e.target.checked)}
               />
-              替换动作参数
+              {t("替换动作参数")}
             </label>
           )}
           {replaceAction && (
             <>
               <label>
-                动作
+                {t("动作")}
                 <select value={type} onChange={(e) => setType(e.target.value)}>
                   {[
                     "repub",
@@ -237,7 +242,7 @@ export default function Rules() {
                 </select>
               </label>
               <label>
-                动作参数（JSON）
+                {t("动作参数（JSON）")}
                 <textarea
                   className="code-editor"
                   rows={8}
@@ -260,10 +265,10 @@ export default function Rules() {
               className="button"
               onClick={() => setEditing(null)}
             >
-              取消
+              {t("取消")}
             </button>
             <button type="button" className="button primary" onClick={prepare}>
-              审阅变更
+              {t("审阅变更")}
             </button>
           </div>
         </Modal>
@@ -275,11 +280,11 @@ export default function Rules() {
             if (!busy) setPending(null);
           }}
         >
-          {error && <Notice error>{error}</Notice>}
+          {error && <Notice error>{errorText(error)}</Notice>}
           <p>
             {pending.method === "DELETE"
-              ? "确认删除该规则？"
-              : "确认应用以下变更？"}
+              ? t("确认删除该规则？")
+              : t("确认应用以下变更？")}
           </p>
           <pre>
             {pending.body
@@ -293,7 +298,7 @@ export default function Rules() {
               disabled={busy}
               onClick={() => setPending(null)}
             >
-              取消
+              {t("取消")}
             </button>
             <button
               type="button"
@@ -303,7 +308,7 @@ export default function Rules() {
                 void execute();
               }}
             >
-              {busy ? "提交中…" : "确认"}
+              {busy ? t("提交中…") : t("确认")}
             </button>
           </div>
         </Modal>

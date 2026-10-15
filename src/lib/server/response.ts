@@ -10,6 +10,7 @@ export function errorResponse(error: unknown) {
   if (error instanceof ZodError)
     return NextResponse.json(
       {
+        issues: error.issues,
         error: error.issues
           .map((i) => `${i.path.join(".")}: ${i.message}`)
           .join("; "),

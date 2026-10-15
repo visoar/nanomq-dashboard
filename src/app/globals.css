@@ -1945,3 +1945,46 @@ td .mono,
 .bridge-subscribe-form {
   margin-top: 25px;
 }
+
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.language-switch select {
+  width: auto;
+  min-width: 0;
+  padding: 6px 22px 6px 7px;
+  font-size: 12px;
+  color: var(--text);
+}
+.signin-form-section {
+  position: relative;
+}
+.signin-language {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+}
+@media (max-width: 700px) {
+  .topbar .connection {
+    display: none;
+  }
+  .breadcrumbs {
+    min-width: 0;
+  }
+  .breadcrumbs strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .topbar-actions {
+    flex-shrink: 0;
+  }
+  .language-switch select {
+    font-size: 11px;
+  }
+}

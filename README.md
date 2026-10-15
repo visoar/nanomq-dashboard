@@ -6,7 +6,7 @@ A focused operations console for NanoMQ HTTP API v4. Built with Next.js 16, Reac
 
 [English](#english) · [简体中文](#简体中文) · [API contract / API 契约](docs/API.md) · [MIT License](LICENSE)
 
-![NanoMQ overview — connected to a real NanoMQ 0.25.6 broker](docs/screenshots/overview.png)
+![NanoMQ overview — connected to a real NanoMQ 0.25.6 broker](docs/screenshots/overview-en.png)
 
 ## English
 
@@ -21,11 +21,26 @@ A focused operations console for NanoMQ HTTP API v4. Built with Next.js 16, Reac
 - **MQTT bridges:** inspect existing bridge nodes, enable/disable bridges and manage remote subscriptions; create/edit/remove nodes through the configuration file workflow.
 - **Configuration:** read real broker sections; edit basic, TLS, WebSocket, HTTP, password/HTTP authentication and SQLite settings; update seven supported hot parameters; replace the HOCON file; explicitly confirm restart/stop.
 - **Sessions:** Basic or JWT authentication, encrypted HttpOnly cookies, 12-hour expiration, broker target allowlisting, same-origin writes and a bounded, validated proxy.
+- English and Simplified Chinese across the interface, including dialogs, validation and connection errors.
 - Responsive layouts, dark mode, keyboard-accessible dialogs and self-hosted fonts. No external font service is needed.
 
 There is **no mock/demo mode, random telemetry or success fallback**. Unsupported operations are not presented as working controls. Missing metrics display `—`; failed reads expose errors and label retained snapshots as stale.
 
 NanoMQ 0.25.6 advertises some operations it does not route. Ordinary client subscribe/unsubscribe writes and bridge creation/deletion are unavailable in that release. Clients manage their own subscriptions; new bridges are configured through HOCON. See [verified API boundaries](docs/API.md#release-specific-boundaries--当前版本边界).
+
+### Interface language
+
+Choose **English** or **中文** on the connection page or in the console header. The initial language follows your browser preferences; unsupported languages fall back to English. An explicit choice is saved in the `nanomq-language` cookie for one year and used for server rendering. Switching languages keeps your session, page and form edits. Broker data, MQTT topics and configuration keys keep their original values.
+
+
+<details>
+<summary>English message workbench and mobile navigation</summary>
+
+![English message workbench](docs/screenshots/publish-en.png)
+
+<img src="docs/screenshots/mobile-en.png" alt="English mobile dashboard" width="390" />
+
+</details>
 
 ### Quick start
 
@@ -106,7 +121,7 @@ docker rm -f nanomq-dashboard-test
 
 Use `TEST_BROKER_URL`, `TEST_MQTT_URL`, `TEST_BROKER_USERNAME`, `TEST_BROKER_PASSWORD` and `TEST_BROKER_CONFIG_PATH` when testing a separately started broker. The default HTTP/MQTT ports are `18081`/`18884`; the default configuration path is `deploy/nanomq.test.conf`. A bridge named `test-edge` and a build with rule engine support are required by management tests.
 
-Screenshots in this repository are captured from this application connected to a real NanoMQ 0.25.6 broker, with disposable MQTT test clients. These are not design mockups or injected dashboard responses. Upstream reports CPU/memory as zero on macOS; Linux provides process resource measurements.
+Screenshots in this repository are captured from this application connected to a real NanoMQ 0.25.6 broker, with disposable MQTT test clients. Both language versions are captured from the same live application. These are not design mockups or injected dashboard responses. Upstream reports CPU/memory as zero on macOS; Linux provides process resource measurements.
 
 ### Structure and migration
 
@@ -114,6 +129,8 @@ Screenshots in this repository are captured from this application connected to a
 src/app/                 Pages and same-origin API routes
 src/components/          Shared shell, tables, charts and dialogs
 src/context/dashboard.tsx  Session bootstrap, polling and bounded history
+src/context/language.tsx   Language selection and persistent preference
+src/lib/i18n/             UI translations and localized diagnostics
 src/lib/contracts.ts     Runtime schemas, metric parsing and counter rates
 src/lib/server/          Session encryption, target policy and broker transport
 src/lib/use-resource.ts   Page-scoped reads with cancellation
@@ -137,11 +154,18 @@ Version 2 replaces the unused admin template, duplicated Axios proxies, simulate
 - **MQTT 桥接**：查看、启停现有桥接，添加和取消远端订阅；通过配置文件流程创建、修改与移除桥接节点。
 - **Broker 配置**：读取真实配置，编辑基础、TLS、WebSocket、HTTP、密码/HTTP 认证、SQLite 等章节；热更新七个实际支持的参数；替换完整 HOCON 文件；确认后重启或停止。
 - **会话认证**：Basic/JWT、加密 HttpOnly Cookie、12 小时过期、Broker 地址白名单、同源写入检查、请求大小限制与参数校验。
+- 界面完整支持简体中文与英文，覆盖弹窗、参数校验和连接错误。
 - 支持响应式布局、深色模式、键盘操作和本地字体，不依赖外部字体服务。
 
 项目**没有 mock、演示数据、随机指标或失败后伪造成功的逻辑**。不把上游未实现的操作包装成可用按钮；缺失指标显示 `—`，读取失败明确提示，并标记保留的数据可能已过期。
 
 NanoMQ 0.25.6 的端点列表存在与实现不一致的情况：普通客户端订阅写接口、桥接创建与删除没有实际路由。客户端自行维护订阅，新增桥接通过 HOCON 配置完成。详见 [API 契约与版本边界](docs/API.md)。
+
+### 界面语言
+
+登录页和控制台顶部均可选择 **中文** 或 **English**。首次访问按浏览器语言选择，不支持的语言回退为英文。手动选择保存在 `nanomq-language` Cookie 中，有效期一年，刷新时由服务端直接输出对应语言。切换语言会保留会话、当前页面和未提交的表单；Broker 数据、MQTT 主题和配置字段保持原值。
+
+![连接真实 Broker 的中文总览](docs/screenshots/overview.png)
 
 ### 快速开始
 
@@ -220,13 +244,17 @@ docker rm -f nanomq-dashboard-test
 
 外部启动的测试实例可通过 `TEST_BROKER_URL`、`TEST_MQTT_URL`、`TEST_BROKER_USERNAME`、`TEST_BROKER_PASSWORD` 和 `TEST_BROKER_CONFIG_PATH` 指定。默认 HTTP/MQTT 端口为 `18081`/`18884`，配置路径为 `deploy/nanomq.test.conf`；管理测试要求规则引擎及名为 `test-edge` 的桥接。
 
-文档截图来自实际运行的面板和真实 NanoMQ 0.25.6，以及测试时连接的临时 MQTT 客户端，不是设计稿或注入响应。macOS 下上游 CPU/内存返回零，Linux 下会返回实际进程资源指标。
+文档截图来自实际运行的面板和真实 NanoMQ 0.25.6，以及测试时连接的临时 MQTT 客户端，中英文截图均来自同一套实际界面，不是设计稿或注入响应。macOS 下上游 CPU/内存返回零，Linux 下会返回实际进程资源指标。
 
 ### 从旧版迁移
 
 v2 清理未使用的后台模板，统一重复代理，替换模拟配置和随机指标。首次加载会删除旧版 `nanomq-auth`、`nanomq-config` 明文 localStorage 数据，需要重新连接一次；旧 `NEXT_PUBLIC_NANOMQ_*` 配置改为上表中的服务端变量。`/statistics` 跳转到统一监控页 `/monitoring`。Broker 没有账户注册接口，因此移除了未使用的注册模板。
 
 ## Screenshots / 界面截图
+
+### Language switch / 语言切换
+
+![English connection page with language selector / 支持语言选择的英文登录页](docs/screenshots/signin-en.png)
 
 ### Clients / 客户端
 
@@ -264,3 +292,5 @@ v2 清理未使用的后台模板，统一重复代理，替换模拟配置和�
 ## License / 许可证
 
 [MIT](LICENSE). Bundled fonts retain their [DM Sans](public/fonts/OFL-DM-Sans.txt) and [IBM Plex Mono](public/fonts/OFL-IBM-Plex-Mono.txt) Open Font Licenses. This community dashboard is independent of the NanoMQ project.
+
+字体分别遵循 [DM Sans](public/fonts/OFL-DM-Sans.txt) 与 [IBM Plex Mono](public/fonts/OFL-IBM-Plex-Mono.txt) 的开放字体许可证。本社区控制台独立于 NanoMQ 官方项目。

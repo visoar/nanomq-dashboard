@@ -24,6 +24,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
 import { useDashboard } from "@/context/dashboard";
+import { useI18n } from "@/context/language";
+import { message } from "@/lib/api";
+import { LanguageSwitch } from "./language-switch";
 import { Notice } from "./ui";
 
 const links = [
@@ -37,6 +40,7 @@ const links = [
   { href: "/configuration", label: "Broker 配置", icon: Settings2 },
 ];
 export function Shell({ children }: { children: ReactNode }) {
+  const { t, errorText } = useI18n();
   const { session, data, refresh, refreshing, logout } = useDashboard();
   const router = useRouter();
   const path = usePathname();
@@ -62,7 +66,7 @@ export function Shell({ children }: { children: ReactNode }) {
     return (
       <div className="loading-screen">
         <Activity className="spin" />
-        正在加载控制台…
+        {t("正在加载控制台…")}
       </div>
     );
   const healthy = data.brokers !== null && !data.errors.brokers;
@@ -75,11 +79,14 @@ export function Shell({ children }: { children: ReactNode }) {
         <button
           type="button"
           className="scrim"
-          aria-label="关闭导航"
+          aria-label={t("关闭导航")}
           onClick={() => setMobile(false)}
         />
       )}
-      <aside className={`sidebar ${mobile ? "open" : ""}`} aria-label="主导航">
+      <aside
+        className={`sidebar ${mobile ? "open" : ""}`}
+        aria-label={t("主导航")}
+      >
         <Link className="brand" href="/" onClick={() => setMobile(false)}>
           <span className="brand-symbol">
             <Activity size={22} />
@@ -91,7 +98,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <button
           type="button"
           className="mobile-close icon-button"
-          aria-label="关闭导航"
+          aria-label={t("关闭导航")}
           onClick={() => setMobile(false)}
         >
           <X size={20} />
@@ -116,7 +123,7 @@ export function Shell({ children }: { children: ReactNode }) {
               aria-current={path === href ? "page" : undefined}
             >
               <Icon size={18} />
-              <span>{label}</span>
+              <span>{t(label)}</span>
               {path === href && <ChevronRight size={15} />}
             </Link>
           ))}
@@ -129,7 +136,7 @@ export function Shell({ children }: { children: ReactNode }) {
             rel="noreferrer"
           >
             <CircleHelp size={17} />
-            帮助与反馈
+            {t("帮助与反馈")}
             <ArrowUpRight size={14} />
           </a>
           <div className="profile">
@@ -140,9 +147,9 @@ export function Shell({ children }: { children: ReactNode }) {
             <button
               type="button"
               className="icon-button"
-              aria-label="断开连接"
+              aria-label={t("断开连接")}
               onClick={() => {
-                void logout().catch((e) => setLogoutError(String(e)));
+                void logout().catch((e) => setLogoutError(message(e)));
               }}
             >
               <LogOut size={17} />
@@ -156,29 +163,30 @@ export function Shell({ children }: { children: ReactNode }) {
             <button
               type="button"
               className="icon-button mobile-menu"
-              aria-label="打开导航"
+              aria-label={t("打开导航")}
               onClick={() => setMobile(true)}
             >
               <Menu size={21} />
             </button>
-            <span>工作空间</span>
+            <span>{t("工作空间")}</span>
             <ChevronRight size={13} />
-            <strong>{active?.label}</strong>
+            <strong>{active ? t(active.label) : ""}</strong>
           </div>
           <div className="topbar-actions">
             <span className={`connection ${healthy ? "online" : "offline"}`}>
               <i />
               {healthy
-                ? "Broker 已连接"
+                ? t("Broker 已连接")
                 : data.updated
-                  ? "连接异常"
-                  : "正在连接"}
+                  ? t("连接异常")
+                  : t("正在连接")}
             </span>
             <span className="topbar-divider" />
+            <LanguageSwitch />
             <button
               type="button"
               className="icon-button"
-              aria-label="切换主题"
+              aria-label={t("切换主题")}
               onClick={theme}
             >
               {dark ? <Sun size={18} /> : <Moon size={18} />}
@@ -186,7 +194,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <a
               href="https://github.com/visoar/nanomq-dashboard"
               className="icon-button"
-              aria-label="GitHub 仓库"
+              aria-label={t("GitHub 仓库")}
               target="_blank"
               rel="noreferrer"
             >
@@ -209,20 +217,20 @@ export function Shell({ children }: { children: ReactNode }) {
               }}
             >
               <RefreshCw size={13} className={refreshing ? "spin" : ""} />
-              {refreshing ? "正在同步" : "立即刷新"}
+              {refreshing ? t("正在同步") : t("立即刷新")}
             </button>
           </div>
-          {logoutError && <Notice error>{logoutError}</Notice>}
+          {logoutError && <Notice error>{errorText(logoutError)}</Notice>}
           {Object.keys(data.errors).filter(
             (k) => k !== "metrics" && k !== "prometheus",
           ).length > 0 && (
             <Notice error>
-              部分数据刷新失败，以下页面可能保留上次成功的数据。
+              {t("部分数据刷新失败，以下页面可能保留上次成功的数据。")}
               {Object.entries(data.errors)
                 .filter(([k]) => k !== "metrics" && k !== "prometheus")
                 .map(([k, v]) => (
                   <div key={k}>
-                    {k}: {v}
+                    {t(k)}: {errorText(v)}
                   </div>
                 ))}
             </Notice>

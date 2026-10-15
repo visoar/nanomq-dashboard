@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "@/context/language";
 import type { Client } from "@/lib/contracts";
 import { Empty, number, Status } from "./ui";
 export function ClientTable({
@@ -8,11 +9,12 @@ export function ClientTable({
   clients: Client[];
   onSelect?: (client: Client) => void;
 }) {
+  const { t } = useI18n();
   if (!clients.length)
     return (
       <Empty
-        title="没有匹配的客户端"
-        text="连接 MQTT 设备，或调整搜索与筛选条件。"
+        title={t("没有匹配的客户端")}
+        text={t("连接 MQTT 设备，或调整搜索与筛选条件。")}
       />
     );
   const hasMessageCounts = clients.some(
@@ -23,12 +25,12 @@ export function ClientTable({
       <table>
         <thead>
           <tr>
-            <th>客户端 ID</th>
-            <th>用户名</th>
-            <th>连接状态</th>
-            <th>协议</th>
+            <th>{t("客户端 ID")}</th>
+            <th>{t("用户名")}</th>
+            <th>{t("连接状态")}</th>
+            <th>{t("协议")}</th>
             <th>Keep Alive</th>
-            {hasMessageCounts && <th>接收消息</th>}
+            {hasMessageCounts && <th>{t("接收消息")}</th>}
           </tr>
         </thead>
         <tbody>
@@ -47,7 +49,9 @@ export function ClientTable({
                   <span className="mono strong">{c.client_id}</span>
                 )}
               </td>
-              <td>{c.username || <span className="muted">匿名</span>}</td>
+              <td>
+                {c.username || <span className="muted">{t("匿名")}</span>}
+              </td>
               <td>
                 <Status state={c.conn_state} />
               </td>

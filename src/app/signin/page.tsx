@@ -2,10 +2,13 @@
 import { Activity, ArrowRight, LockKeyhole, Radio } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
+import { LanguageSwitch } from "@/components/language-switch";
 import { Notice } from "@/components/ui";
 import { useDashboard } from "@/context/dashboard";
+import { useI18n } from "@/context/language";
 import { message, request } from "@/lib/api";
 export default function SignIn() {
+  const { t, errorText, locale } = useI18n();
   const { session, defaultURL, reconnect } = useDashboard();
   const router = useRouter();
   const [baseURL, setBaseURL] = useState("");
@@ -52,9 +55,9 @@ export default function SignIn() {
         </div>
         <div className="signin-intro">
           <h1>
-            每一次连接，
+            {t("每一次连接，")}
             <br />
-            都清晰可见。
+            {t("都清晰可见。")}
           </h1>
 
           <div className="signal-art" aria-hidden="true">
@@ -66,16 +69,19 @@ export default function SignIn() {
         </div>
       </section>
       <section className="signin-form-section">
+        <div className="signin-language">
+          <LanguageSwitch />
+        </div>
         <form className="signin-form" onSubmit={connect}>
           <span className="form-icon">
             <LockKeyhole size={24} />
           </span>
 
-          <h2>连接 NanoMQ</h2>
+          <h2>{t("连接 NanoMQ")}</h2>
 
-          {error && <Notice error>{error}</Notice>}
+          {error && <Notice error>{errorText(error)}</Notice>}
           <label>
-            Broker HTTP 地址
+            {t("Broker HTTP 地址")}
             <input
               type="url"
               value={baseURL || defaultURL}
@@ -85,19 +91,19 @@ export default function SignIn() {
             />
           </label>
           <label>
-            认证方式
+            {t("认证方式")}
             <select
               value={authType}
               onChange={(e) => setAuthType(e.target.value)}
             >
-              <option value="basic">Basic Authentication</option>
-              <option value="jwt">JWT Bearer Token</option>
+              <option value="basic">{t("Basic 认证")}</option>
+              <option value="jwt">{t("JWT 令牌")}</option>
             </select>
           </label>
           {authType === "basic" ? (
             <>
               <label>
-                用户名
+                {t("用户名")}
                 <input
                   autoComplete="username"
                   value={username}
@@ -106,7 +112,7 @@ export default function SignIn() {
                 />
               </label>
               <label>
-                密码
+                {t("密码")}
                 <input
                   type="password"
                   autoComplete="current-password"
@@ -117,7 +123,7 @@ export default function SignIn() {
             </>
           ) : (
             <label>
-              JWT Token
+              {t("JWT 令牌")}
               <textarea
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
@@ -131,17 +137,17 @@ export default function SignIn() {
             className="button primary full"
             disabled={busy || session === undefined}
           >
-            {busy ? "正在验证连接…" : "连接 Broker"}
+            {busy ? t("正在验证连接…") : t("连接 Broker")}
             <ArrowRight size={17} />
           </button>
 
           <a
             className="signin-docs"
-            href="https://nanomq.io/docs/en/latest/config-description/http-server.html"
+            href={`https://nanomq.io/docs/${locale === "zh-CN" ? "zh" : "en"}/latest/config-description/http-server.html`}
             target="_blank"
             rel="noreferrer"
           >
-            连接前，请确认 Broker 已启用 HTTP API ↗
+            {t("连接前，请确认 Broker 已启用 HTTP API ↗")}
           </a>
         </form>
       </section>

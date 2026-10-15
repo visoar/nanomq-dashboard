@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { z } from "zod";
 import { Empty, Modal, Notice, PageTitle, Panel } from "@/components/ui";
+import { useI18n } from "@/context/language";
 import { message, mutate } from "@/lib/api";
 import { type Publish, publishSchema } from "@/lib/contracts";
 
@@ -11,6 +12,7 @@ const resultSchema = z.object({
   data: z.array(z.object({ topic: z.string(), code: z.number() })),
 });
 export default function BatchPublish() {
+  const { t, errorText } = useI18n();
   const [editor, setEditor] = useState("");
   const [input, setInput] = useState<Publish[] | null>(null);
   const [results, setResults] = useState<z.infer<typeof resultSchema>["data"]>(
@@ -45,18 +47,18 @@ export default function BatchPublish() {
   return (
     <>
       <PageTitle
-        title="批量发布"
+        title={t("批量发布")}
         action={
           <Link className="button" href="/publish">
-            单条发布
+            {t("单条发布")}
           </Link>
         }
       />
-      {error && <Notice error>{error}</Notice>}
+      {error && <Notice error>{errorText(error)}</Notice>}
       <Panel>
         <div className="config-content batch-editor">
           <label>
-            消息数组（最多 100 条）
+            {t("消息数组（最多 100 条）")}
             <textarea
               className="code-editor"
               rows={14}
@@ -76,19 +78,19 @@ export default function BatchPublish() {
               disabled={busy}
             >
               <Send size={16} />
-              审阅并发布
+              {t("审阅并发布")}
             </button>
           </div>
         </div>
       </Panel>
-      <Panel title="发布结果">
+      <Panel title={t("发布结果")}>
         {results.length ? (
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>主题</th>
-                  <th>结果</th>
+                  <th>{t("主题")}</th>
+                  <th>{t("结果")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -102,8 +104,8 @@ export default function BatchPublish() {
                         className={`badge ${result.code === 0 ? "green" : "neutral"}`}
                       >
                         {result.code === 0
-                          ? "Broker 已接受"
-                          : `失败 · ${result.code}`}
+                          ? t("Broker 已接受")
+                          : t("失败 · {code}", { code: result.code })}
                       </span>
                     </td>
                   </tr>
@@ -112,19 +114,19 @@ export default function BatchPublish() {
             </table>
           </div>
         ) : (
-          <Empty title="暂无发布结果" text="" />
+          <Empty title={t("暂无发布结果")} text="" />
         )}
       </Panel>
       {input && (
         <Modal
-          title={`发布 ${input.length} 条消息`}
+          title={t("发布 {count} 条消息", { count: input.length })}
           onClose={() => {
             if (!busy) setInput(null);
           }}
         >
           {input.some((item) => item.retain && item.payload === "") && (
             <Notice error>
-              包含空负载的保留消息，发布将清除对应主题的保留消息。
+              {t("包含空负载的保留消息，发布将清除对应主题的保留消息。")}
             </Notice>
           )}
           <pre className="config-diff">{JSON.stringify(input, null, 2)}</pre>
@@ -135,7 +137,7 @@ export default function BatchPublish() {
               disabled={busy}
               onClick={() => setInput(null)}
             >
-              取消
+              {t("取消")}
             </button>
             <button
               type="button"
@@ -145,7 +147,7 @@ export default function BatchPublish() {
                 void send();
               }}
             >
-              {busy ? "发布中…" : "确认发布"}
+              {busy ? t("发布中…") : t("确认发布")}
             </button>
           </div>
         </Modal>

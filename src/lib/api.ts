@@ -3,6 +3,7 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public status: number,
+    public issues?: unknown[],
   ) {
     super(message);
   }
@@ -27,6 +28,9 @@ export async function request<T = unknown>(
         ? data.error
         : `HTTP ${response.status}`,
       response.status,
+      typeof data === "object" && Array.isArray(data?.issues)
+        ? data.issues
+        : undefined,
     );
   return data as T;
 }
@@ -47,5 +51,8 @@ export function mutate(path: string, data?: unknown, method = "POST") {
   });
 }
 export function message(error: unknown) {
+  if (error instanceof ApiError && error.issues)
+    return JSON.stringify(error.issues);
+  if (error instanceof SyntaxError) return "Invalid JSON input";
   return error instanceof Error ? error.message : "Request failed";
 }

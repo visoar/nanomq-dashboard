@@ -10,9 +10,11 @@ import {
   Panel,
 } from "@/components/ui";
 import { useDashboard } from "@/context/dashboard";
+import { useI18n } from "@/context/language";
 import { message, read } from "@/lib/api";
 import { type TopicNode, topicNodeSchema } from "@/lib/contracts";
 export default function Subscriptions() {
+  const { t, errorText } = useI18n();
   const { data } = useDashboard();
   const [tab, setTab] = useState("subscriptions");
   const [search, setSearch] = useState("");
@@ -54,7 +56,7 @@ export default function Subscriptions() {
   return (
     <>
       <PageTitle
-        title="主题与订阅"
+        title={t("主题与订阅")}
         action={
           <button
             type="button"
@@ -67,21 +69,21 @@ export default function Subscriptions() {
             }
           >
             <Download size={15} />
-            导出订阅
+            {t("导出订阅")}
           </button>
         }
       />
       <div className="summary-strip">
         <GitBranch size={19} />
         <strong>{data.subscriptions?.length ?? "—"}</strong>
-        <span>订阅</span>
+        <span>{t("订阅")}</span>
         <span className="separator" />
         <strong>
           {data.subscriptions
             ? new Set(data.subscriptions.map((s) => s.topic)).size
             : "—"}
         </strong>
-        <span>主题过滤器</span>
+        <span>{t("主题过滤器")}</span>
       </div>
       <div className="tabs">
         <button
@@ -89,14 +91,14 @@ export default function Subscriptions() {
           className={tab === "subscriptions" ? "selected" : ""}
           onClick={() => setTab("subscriptions")}
         >
-          订阅列表
+          {t("订阅列表")}
         </button>
         <button
           type="button"
           className={tab === "tree" ? "selected" : ""}
           onClick={() => setTab("tree")}
         >
-          主题层级
+          {t("主题层级")}
         </button>
       </div>
       {tab === "subscriptions" ? (
@@ -105,24 +107,24 @@ export default function Subscriptions() {
             <div className="search-field">
               <Search size={16} />
               <input
-                aria-label="搜索订阅"
+                aria-label={t("搜索订阅")}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                placeholder="搜索主题或客户端 ID…"
+                placeholder={t("搜索主题或客户端 ID…")}
               />
             </div>
             <select
-              aria-label="QoS 筛选"
+              aria-label={t("QoS 筛选")}
               value={qos}
               onChange={(e) => {
                 setQos(e.target.value);
                 setPage(1);
               }}
             >
-              <option value="">全部 QoS</option>
+              <option value="">{t("全部 QoS")}</option>
               {[0, 1, 2].map((n) => (
                 <option key={n} value={n}>
                   QoS {n}
@@ -135,10 +137,10 @@ export default function Subscriptions() {
               <table>
                 <thead>
                   <tr>
-                    <th>主题过滤器</th>
-                    <th>客户端 ID</th>
+                    <th>{t("主题过滤器")}</th>
+                    <th>{t("客户端 ID")}</th>
                     <th>QoS</th>
-                    <th>匹配方式</th>
+                    <th>{t("匹配方式")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -155,10 +157,10 @@ export default function Subscriptions() {
                         </td>
                         <td>
                           {s.topic.startsWith("$share/")
-                            ? "共享订阅"
+                            ? t("共享订阅")
                             : /[+#]/.test(s.topic)
-                              ? "通配符"
-                              : "精确匹配"}
+                              ? t("通配符")
+                              : t("精确匹配")}
                         </td>
                       </tr>
                     ))}
@@ -166,7 +168,7 @@ export default function Subscriptions() {
               </table>
             </div>
           ) : (
-            <Empty title="没有匹配的订阅" text="" />
+            <Empty title={t("没有匹配的订阅")} text="" />
           )}
           <Pagination
             page={safePage}
@@ -176,19 +178,21 @@ export default function Subscriptions() {
           />
         </Panel>
       ) : (
-        <Panel title="主题层级">
-          {treeError && <Notice error>{treeError}</Notice>}
+        <Panel title={t("主题层级")}>
+          {treeError && <Notice error>{errorText(treeError)}</Notice>}
           {tree?.length ? (
             <div className="topic-levels">
               {tree
                 .filter((level) => level.length)
                 .map((level, index) => (
                   <div key={JSON.stringify(level)} className="topic-level">
-                    <span className="eyebrow">层级 {index}</span>
+                    <span className="eyebrow">
+                      {t("层级 {level}", { level: index })}
+                    </span>
                     {level.map((node) => (
                       <div className="topic-node" key={JSON.stringify(node)}>
                         <GitBranch size={16} />
-                        <code>{node.topic || "(root)"}</code>
+                        <code>{node.topic || t("根主题")}</code>
                         <span className="topic-clients">
                           {node.clientid?.join(", ")}
                         </span>
@@ -198,7 +202,7 @@ export default function Subscriptions() {
                 ))}
             </div>
           ) : (
-            <Empty title="暂无主题层级" text="" />
+            <Empty title={t("暂无主题层级")} text="" />
           )}
         </Panel>
       )}
