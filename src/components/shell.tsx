@@ -70,6 +70,11 @@ export function Shell({ children }: { children: ReactNode }) {
       </div>
     );
   const healthy = data.brokers !== null && !data.errors.brokers;
+  const connectionStatus = healthy
+    ? t("Broker 已连接")
+    : data.updated
+      ? t("连接异常")
+      : t("正在连接");
   const active = links.find(
     (l) => l.href === path || (l.href !== "/" && path.startsWith(`${l.href}/`)),
   );
@@ -173,13 +178,12 @@ export function Shell({ children }: { children: ReactNode }) {
             <strong>{active ? t(active.label) : ""}</strong>
           </div>
           <div className="topbar-actions">
-            <span className={`connection ${healthy ? "online" : "offline"}`}>
+            <span
+              className={`connection ${healthy ? "online" : "offline"}`}
+              title={connectionStatus}
+            >
               <i />
-              {healthy
-                ? t("Broker 已连接")
-                : data.updated
-                  ? t("连接异常")
-                  : t("正在连接")}
+              {connectionStatus}
             </span>
             <span className="topbar-divider" />
             <LanguageSwitch />

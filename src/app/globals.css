@@ -1971,7 +1971,8 @@ td .mono,
 }
 @media (max-width: 700px) {
   .topbar .connection {
-    display: none;
+    font-size: 0;
+    gap: 0;
   }
   .breadcrumbs {
     min-width: 0;
