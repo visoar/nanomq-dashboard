@@ -1,0 +1,51 @@
+name: Verify dashboard
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Start isolated NanoMQ 0.25.6
+        run: |
+          docker run -d --name nanomq-dashboard-test \
+            -p 127.0.0.1:18081:8081 -p 127.0.0.1:18884:1883 \
+            -v "$PWD/deploy/nanomq.test.conf:/etc/nanomq.conf" \
+            emqx/nanomq:0.25.6-full --conf /etc/nanomq.conf --http
+          for attempt in $(seq 1 30); do
+            if curl -fsS --basic -u admin:public http://127.0.0.1:18081/api/v4/brokers; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs nanomq-dashboard-test
+          exit 1
+      - name: Build production container
+        run: docker build -t nanomq-dashboard:test .
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Save browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: browser-diagnostics
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+      - name: Stop test broker
+        if: always()
+        run: docker rm -f nanomq-dashboard-test

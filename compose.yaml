@@ -1,0 +1,20 @@
+services:
+  dashboard:
+    build: .
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      NANOMQ_API_URL: http://broker:8081
+      NANOMQ_SESSION_SECRET: ${NANOMQ_SESSION_SECRET:?Set NANOMQ_SESSION_SECRET in the environment or .env}
+      NANOMQ_SECURE_COOKIE: "false"
+    depends_on:
+      - broker
+    restart: unless-stopped
+  broker:
+    image: emqx/nanomq:0.25.6-full
+    command: ["--conf", "/etc/nanomq.conf", "--http"]
+    ports:
+      - "127.0.0.1:1883:1883"
+    volumes:
+      - ./deploy/nanomq.conf:/etc/nanomq.conf
+    restart: unless-stopped

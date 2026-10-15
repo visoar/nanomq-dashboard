@@ -1,37 +1,19 @@
-import { Outfit } from 'next/font/google';
-import './globals.css';
-
-import { SidebarProvider } from '@/context/SidebarContext';
-import { ThemeProvider } from '@/context/ThemeContext';
-import { AuthProvider } from '@/context/AuthContext';
-import { NanoMQProvider } from '@/context/NanoMQContext';
-
-const outfit = Outfit({
-  subsets: ["latin"],
-});
-
-export const metadata = {
-  title: 'NanoMQ Dashboard',
-  description: 'A comprehensive dashboard for NanoMQ MQTT broker management',
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import { DashboardProvider } from "@/context/dashboard";
+import "./globals.css";
+export const metadata: Metadata = {
+  title: { default: "NanoMQ Dashboard", template: "%s · NanoMQ" },
+  description: "NanoMQ HTTP API v4 operations console",
 };
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${outfit.className} dark:bg-gray-900`}>
-        <ThemeProvider>
-          <AuthProvider>
-            <SidebarProvider>
-              <NanoMQProvider>
-                {children}
-              </NanoMQProvider>
-            </SidebarProvider>
-          </AuthProvider>
-        </ThemeProvider>
+    <html lang="zh-CN" suppressHydrationWarning>
+      <body>
+        <a className="skip-link" href="#main">
+          跳至主要内容
+        </a>
+        <DashboardProvider>{children}</DashboardProvider>
       </body>
     </html>
   );
