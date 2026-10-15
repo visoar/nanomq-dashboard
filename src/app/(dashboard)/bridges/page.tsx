@@ -2,10 +2,13 @@
 import { GitBranch, Pencil, Power, RefreshCw, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
-import { z } from "zod";
 import { Empty, Modal, Notice, PageTitle, Panel } from "@/components/ui";
 import { message, mutate } from "@/lib/api";
-import { type Bridge, bridgeConfigSchema, topicFilter } from "@/lib/contracts";
+import {
+  type Bridge,
+  bridgeConfigSchema,
+  bridgeSubscriptionSchema,
+} from "@/lib/contracts";
 import { useResource } from "@/lib/use-resource";
 
 type Operation = { bridge: Bridge; path: string; title: string; body: unknown };
@@ -25,11 +28,11 @@ export default function Bridges() {
     if (!managing) return;
     try {
       const form = new FormData(event.currentTarget);
-      const remote = topicFilter.parse(form.get("remote"));
-      const local = topicFilter.parse(form.get("local"));
-      const qos = z
-        .union([z.literal(0), z.literal(1), z.literal(2)])
-        .parse(Number(form.get("qos")));
+      const input = bridgeSubscriptionSchema.parse({
+        remote_topic: form.get("remote"),
+        local_topic: form.get("local"),
+        qos: Number(form.get("qos")),
+      });
       setError("");
       setPending({
         bridge: managing,
@@ -37,7 +40,7 @@ export default function Bridges() {
         path: `/bridges/sub/${encodeURIComponent(managing.name)}`,
         body: {
           data: {
-            subscription: [{ remote_topic: remote, local_topic: local, qos }],
+            subscription: [input],
           },
         },
       });

@@ -125,12 +125,12 @@ export const publishSchema = z
       ),
     "Payload must be valid Base64",
   );
-export const subscribeSchema = z.object({
-  clientid: z.string().min(1),
-  topic: topicFilter,
+export const bridgeSubscriptionSchema = z.object({
+  remote_topic: topicFilter,
+  local_topic: topicFilter,
   qos: z.union([z.literal(0), z.literal(1), z.literal(2)]),
 });
-export const unsubscribeSchema = subscribeSchema.omit({ qos: true });
+export const bridgeUnsubscriptionSchema = z.object({ topic: topicFilter });
 export type Broker = z.infer<typeof brokerSchema>;
 export type BrokerNode = z.infer<typeof nodeSchema>;
 export type Client = z.infer<typeof clientSchema>;

@@ -1,5 +1,7 @@
 import { z } from "zod";
 import {
+  bridgeSubscriptionSchema,
+  bridgeUnsubscriptionSchema,
   createRuleSchema,
   publishSchema,
   reloadSchema,
@@ -46,15 +48,7 @@ export function validateBody(path: string, body: unknown) {
     return z
       .object({
         data: z.object({
-          subscription: z
-            .array(
-              z.object({
-                remote_topic: z.string().min(1),
-                local_topic: z.string().min(1),
-                qos: z.union([z.literal(0), z.literal(1), z.literal(2)]),
-              }),
-            )
-            .min(1),
+          subscription: bridgeSubscriptionSchema.array().min(1).max(100),
         }),
       })
       .parse(body);
@@ -62,9 +56,7 @@ export function validateBody(path: string, body: unknown) {
     return z
       .object({
         data: z.object({
-          unsubscription: z
-            .array(z.object({ topic: z.string().min(1) }))
-            .min(1),
+          unsubscription: bridgeUnsubscriptionSchema.array().min(1).max(100),
         }),
       })
       .parse(body);
