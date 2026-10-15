@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { download, Modal, Notice, PageTitle, Panel } from "@/components/ui";
 import { useCapability, useDashboard } from "@/context/dashboard";
+import { useI18n } from "@/context/language";
 import { message, mutate, read } from "@/lib/api";
 import { type ReloadConfig, reloadSchema } from "@/lib/contracts";
 
@@ -67,6 +68,7 @@ const hotFields: {
   },
 ];
 export default function Configuration() {
+  const { t, errorText } = useI18n();
   const { refresh, session } = useDashboard();
   const canReload = useCapability("POST", "/reload");
   const [section, setSection] = useState("reload");
@@ -76,7 +78,10 @@ export default function Configuration() {
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState<{
+    key: string;
+    values?: Record<string, string>;
+  } | null>(null);
   const [reload, setReload] = useState(0);
   const [pending, setPending] = useState<Record<string, unknown> | null>(null);
   const [action, setAction] = useState<"stop" | "restart" | null>(null);
@@ -93,7 +98,7 @@ export default function Configuration() {
     async function load() {
       setLoading(true);
       setError("");
-      setFeedback("");
+      setFeedback(null);
       setHot(null);
       setEditor("");
       setOriginal("");
@@ -124,7 +129,7 @@ export default function Configuration() {
     !!original &&
     (section === "reload" ? JSON.stringify(hot, null, 2) : editor) !== original;
   function switchSection(key: string) {
-    if (dirty && !window.confirm("当前有未保存的修改，确认放弃？")) return;
+    if (dirty && !window.confirm(t("当前有未保存的修改，确认放弃？"))) return;
     setSection(key);
   }
   function prepareSave() {
@@ -135,7 +140,7 @@ export default function Configuration() {
           ? reloadSchema.parse(hot)
           : z.record(z.string(), z.unknown()).parse(JSON.parse(editor));
       if (section !== "reload" && !(section in value))
-        throw new Error(`配置必须包含 ${section} 字段`);
+        throw new Error(`Missing configuration section: ${section}`);
       setPending(value);
     } catch (e) {
       setError(message(e));
@@ -155,11 +160,11 @@ export default function Configuration() {
       setOriginal(serialized);
       if (section === "reload") setHot(normalized as ReloadConfig);
       else setEditor(serialized);
-      setFeedback(
-        matches
+      setFeedback({
+        key: matches
           ? "配置已提交，并重新读取 Broker 当前值。"
           : "Broker 已接受请求。读回值与提交值不同，请检查当前配置；部分字段可能不支持更新。",
-      );
+      });
       setPending(null);
       await refresh();
     } catch (e) {
@@ -174,7 +179,10 @@ export default function Configuration() {
     setError("");
     try {
       await mutate(`/ctrl/${action}`);
-      setFeedback(`Broker 已接受 ${action} 请求。后续状态将由轮询更新。`);
+      setFeedback({
+        key: "Broker 已接受 {action} 请求。后续状态将由轮询更新。",
+        values: { action },
+      });
       setAction(null);
       setConfirmation("");
     } catch (e) {
@@ -187,7 +195,7 @@ export default function Configuration() {
   return (
     <>
       <PageTitle
-        title="Broker 配置"
+        title={t("Broker 配置")}
         action={
           <button
             type="button"
@@ -201,14 +209,14 @@ export default function Configuration() {
             }
           >
             <Download size={15} />
-            导出配置
+            {t("导出配置")}
           </button>
         }
       />
       <div className="configuration-layout">
         <div className="config-nav">
           <Link className="button" href="/configuration/file">
-            替换配置文件
+            {t("替换配置文件")}
           </Link>
           {sections.map((s) => (
             <button
@@ -218,21 +226,24 @@ export default function Configuration() {
               onClick={() => switchSection(s.key)}
             >
               {s.key === "reload" ? <Zap size={16} /> : <FileJson size={16} />}
-              {s.label}
+              {t(s.label)}
             </button>
           ))}
         </div>
         <div>
           <Panel
-            title={sections.find((s) => s.key === section)?.label}
+            title={t(sections.find((s) => s.key === section)?.label ?? "")}
             action={
               <button
                 type="button"
                 className="icon-button"
-                aria-label="重新读取配置"
+                aria-label={t("重新读取配置")}
                 disabled={busy || loading}
                 onClick={() => {
-                  if (!dirty || window.confirm("放弃未保存修改并重新读取？")) {
+                  if (
+                    !dirty ||
+                    window.confirm(t("放弃未保存修改并重新读取？"))
+                  ) {
                     setLoading(true);
                     setReload((v) => v + 1);
                   }
@@ -243,10 +254,10 @@ export default function Configuration() {
             }
           >
             <div className="config-content">
-              {error && <Notice error>{error}</Notice>}
-              {feedback && <Notice>{feedback}</Notice>}
+              {error && <Notice error>{errorText(error)}</Notice>}
+              {feedback && <Notice>{t(feedback.key, feedback.values)}</Notice>}
               {loading ? (
-                <p className="muted">正在读取 Broker 配置…</p>
+                <p className="muted">{t("正在读取 Broker 配置…")}</p>
               ) : (
                 original && (
                   <>
@@ -256,8 +267,8 @@ export default function Configuration() {
                           {hotFields.map((f) => (
                             <label key={f.key}>
                               <span>
-                                {f.label}
-                                <small>{f.unit}</small>
+                                {t(f.label)}
+                                <small>{t(f.unit)}</small>
                               </span>
                               <input
                                 type="number"
@@ -290,9 +301,9 @@ export default function Configuration() {
                             }
                           />
                           <span>
-                            允许匿名 MQTT 连接
+                            {t("允许匿名 MQTT 连接")}
                             <small>
-                              关闭前请确保设备已配置有效的认证信息。
+                              {t("关闭前请确保设备已配置有效的认证信息。")}
                             </small>
                           </span>
                         </label>
@@ -300,11 +311,13 @@ export default function Configuration() {
                     ) : (
                       <>
                         <Notice>
-                          {readOnly ? "此视图只读。" : "请保留当前章节名称。"}{" "}
-                          配置可能包含密码和证书，请妥善保管导出文件。
+                          {readOnly
+                            ? t("此视图只读。")
+                            : t("请保留当前章节名称。")}{" "}
+                          {t("配置可能包含密码和证书，请妥善保管导出文件。")}
                         </Notice>
                         <label className="sr-only" htmlFor="config-json">
-                          配置 JSON
+                          {t("配置 JSON")}
                         </label>
                         <textarea
                           id="config-json"
@@ -320,7 +333,7 @@ export default function Configuration() {
                     {!readOnly && (
                       <div className="config-save">
                         <span className={dirty ? "dirty-note" : "muted"}>
-                          {dirty ? "● 有未保存的修改" : "所有修改已保存"}
+                          {dirty ? t("● 有未保存的修改") : t("所有修改已保存")}
                         </span>
                         <button
                           type="button"
@@ -333,7 +346,7 @@ export default function Configuration() {
                           onClick={prepareSave}
                         >
                           <Save size={15} />
-                          审阅并保存
+                          {t("审阅并保存")}
                         </button>
                       </div>
                     )}
@@ -342,12 +355,13 @@ export default function Configuration() {
               )}
             </div>
           </Panel>
-          <Panel title="Broker 控制">
+          <Panel title={t("Broker 控制")}>
             <div className="broker-control">
               <div>
-                <strong>重启或停止 Broker</strong>
+                <strong>{t("重启或停止 Broker")}</strong>
                 <p>
-                  操作对象：<code>{session?.baseURL}</code>
+                  {t("操作对象：")}
+                  <code>{session?.baseURL}</code>
                 </p>
               </div>
               <div className="button-group">
@@ -361,7 +375,7 @@ export default function Configuration() {
                   }}
                 >
                   <RotateCw size={15} />
-                  重启
+                  {t("重启")}
                 </button>
                 <button
                   type="button"
@@ -373,7 +387,7 @@ export default function Configuration() {
                   }}
                 >
                   <Square size={14} />
-                  停止
+                  {t("停止")}
                 </button>
               </div>
             </div>
@@ -382,15 +396,13 @@ export default function Configuration() {
       </div>
       {pending && (
         <Modal
-          title="审阅配置变更"
+          title={t("审阅配置变更")}
           onClose={() => {
             if (!busy) setPending(null);
           }}
         >
-          {error && <Notice error>{error}</Notice>}
-          <p>
-            将以下配置提交到 <code>{path}</code>：
-          </p>
+          {error && <Notice error>{errorText(error)}</Notice>}
+          <p>{t("将以下配置提交到 {path}：", { path })}</p>
           <pre className="config-diff">{JSON.stringify(pending, null, 2)}</pre>
           <div className="modal-actions">
             <button
@@ -399,7 +411,7 @@ export default function Configuration() {
               disabled={busy}
               onClick={() => setPending(null)}
             >
-              继续编辑
+              {t("继续编辑")}
             </button>
             <button
               type="button"
@@ -409,25 +421,26 @@ export default function Configuration() {
                 void save();
               }}
             >
-              {busy ? "正在保存…" : "确认提交"}
+              {busy ? t("正在保存…") : t("确认提交")}
             </button>
           </div>
         </Modal>
       )}
       {action && (
         <Modal
-          title={action === "stop" ? "停止 Broker" : "重启 Broker"}
+          title={action === "stop" ? t("停止 Broker") : t("重启 Broker")}
           onClose={() => {
             if (!busy) setAction(null);
           }}
         >
-          {error && <Notice error>{error}</Notice>}
+          {error && <Notice error>{errorText(error)}</Notice>}
           <Notice error>
-            将中断 <code>{session?.baseURL}</code>{" "}
-            上的连接。停止后需从服务器重新启动 Broker。
+            {t("将中断 {url} 上的连接。停止后需从服务器重新启动 Broker。", {
+              url: session?.baseURL ?? "",
+            })}
           </Notice>
           <label>
-            输入 {action} 以确认
+            {t("输入 {action} 以确认", { action })}
             <input
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
@@ -441,7 +454,7 @@ export default function Configuration() {
               disabled={busy}
               onClick={() => setAction(null)}
             >
-              取消
+              {t("取消")}
             </button>
             <button
               type="button"
@@ -451,7 +464,7 @@ export default function Configuration() {
                 void control();
               }}
             >
-              {busy ? "正在提交…" : "确认操作"}
+              {busy ? t("正在提交…") : t("确认操作")}
             </button>
           </div>
         </Modal>

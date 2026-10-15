@@ -11,8 +11,10 @@ import {
   Status,
 } from "@/components/ui";
 import { useDashboard } from "@/context/dashboard";
+import { useI18n } from "@/context/language";
 import type { Client } from "@/lib/contracts";
 export default function Clients() {
+  const { t } = useI18n();
   const { data } = useDashboard();
   const [search, setSearch] = useState("");
   const [state, setState] = useState("");
@@ -37,7 +39,7 @@ export default function Clients() {
   return (
     <>
       <PageTitle
-        title="客户端"
+        title={t("客户端")}
         action={
           <button
             type="button"
@@ -47,7 +49,7 @@ export default function Clients() {
             }
           >
             <Download size={15} />
-            导出列表
+            {t("导出列表")}
           </button>
         }
       />
@@ -57,18 +59,18 @@ export default function Clients() {
           {data.clients?.filter((c) => c.conn_state === "connected").length ??
             "—"}
         </strong>
-        <span>在线客户端</span>
+        <span>{t("在线客户端")}</span>
         <span className="separator" />
         <strong>{data.clients?.length ?? "—"}</strong>
-        <span>已知会话</span>
+        <span>{t("已知会话")}</span>
       </div>
       <Panel>
         <div className="filter-bar">
           <div className="search-field">
             <Search size={16} />
             <input
-              aria-label="搜索客户端"
-              placeholder="搜索客户端 ID 或用户名…"
+              aria-label={t("搜索客户端")}
+              placeholder={t("搜索客户端 ID 或用户名…")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -77,27 +79,27 @@ export default function Clients() {
             />
           </div>
           <select
-            aria-label="连接状态"
+            aria-label={t("连接状态")}
             value={state}
             onChange={(e) => {
               setState(e.target.value);
               setPage(1);
             }}
           >
-            <option value="">全部状态</option>
-            <option value="connected">在线</option>
-            <option value="idle">空闲</option>
-            <option value="disconnected">离线</option>
+            <option value="">{t("全部状态")}</option>
+            <option value="connected">{t("在线")}</option>
+            <option value="idle">{t("空闲")}</option>
+            <option value="disconnected">{t("离线")}</option>
           </select>
           <select
-            aria-label="协议版本"
+            aria-label={t("协议版本")}
             value={protocol}
             onChange={(e) => {
               setProtocol(e.target.value);
               setPage(1);
             }}
           >
-            <option value="">全部协议</option>
+            <option value="">{t("全部协议")}</option>
             <option value="5">MQTT 5.0</option>
             <option value="4">MQTT 3.1.1</option>
             <option value="3">MQTT 3.1</option>
@@ -115,26 +117,28 @@ export default function Clients() {
         />
       </Panel>
       {selected && (
-        <Modal title="客户端详情" onClose={() => setSelected(null)}>
+        <Modal title={t("客户端详情")} onClose={() => setSelected(null)}>
           <div className="detail-grid">
-            <span>客户端 ID</span>
+            <span>{t("客户端 ID")}</span>
             <code>{selected.client_id}</code>
-            <span>连接状态</span>
+            <span>{t("连接状态")}</span>
             <Status state={selected.conn_state} />
-            <span>用户名</span>
-            <strong>{selected.username || "匿名"}</strong>
-            <span>全新会话</span>
-            <strong>{selected.clean_start ? "是" : "否"}</strong>
+            <span>{t("用户名")}</span>
+            <strong>{selected.username || t("匿名")}</strong>
+            <span>{t("全新会话")}</span>
+            <strong>{selected.clean_start ? t("是") : t("否")}</strong>
             <span>Keep Alive</span>
-            <strong>{selected.keepalive} 秒</strong>
+            <strong>
+              {t("{seconds} 秒", { seconds: selected.keepalive })}
+            </strong>
             {selected.will_topic && (
               <>
-                <span>遗嘱主题</span>
+                <span>{t("遗嘱主题")}</span>
                 <code>{selected.will_topic}</code>
               </>
             )}
           </div>
-          <h3 className="section-label">此客户端的订阅</h3>
+          <h3 className="section-label">{t("此客户端的订阅")}</h3>
           {data.subscriptions
             ?.filter((s) => s.clientid === selected.client_id)
             .map((s) => (
@@ -145,8 +149,10 @@ export default function Clients() {
             ))}
           {!data.subscriptions?.some(
             (s) => s.clientid === selected.client_id,
-          ) && <p className="muted">暂无订阅记录。</p>}
-          <p className="subtle-note">当前 NanoMQ API 未提供断开客户端接口。</p>
+          ) && <p className="muted">{t("暂无订阅记录。")}</p>}
+          <p className="subtle-note">
+            {t("当前 NanoMQ API 未提供断开客户端接口。")}
+          </p>
         </Modal>
       )}
     </>

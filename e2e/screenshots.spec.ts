@@ -17,6 +17,16 @@ test("capture real broker screens for the bilingual README", async ({
 }) => {
   await page.goto("/signin");
   await page.getByRole("heading", { name: "连接 NanoMQ" }).waitFor();
+  await page
+    .getByRole("combobox", { name: "语言", exact: true })
+    .selectOption("en");
+  await page.screenshot({
+    path: "docs/screenshots/signin-en.png",
+    animations: "disabled",
+  });
+  await page
+    .getByRole("combobox", { name: "Language", exact: true })
+    .selectOption("zh-CN");
   await page.screenshot({ path: "docs/screenshots/signin.png" });
   await login(page);
   await page.getByRole("button", { name: "立即刷新", exact: true }).click();
@@ -28,6 +38,17 @@ test("capture real broker screens for the bilingual README", async ({
     fullPage: true,
     animations: "disabled",
   });
+  await page
+    .getByRole("combobox", { name: "语言", exact: true })
+    .selectOption("en");
+  await page.screenshot({
+    path: "docs/screenshots/overview-en.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page
+    .getByRole("combobox", { name: "Language", exact: true })
+    .selectOption("zh-CN");
   await page.getByRole("link", { name: "客户端", exact: true }).click();
   await expect(page.locator("tbody tr")).not.toHaveCount(0);
   await page.screenshot({
@@ -54,6 +75,17 @@ test("capture real broker screens for the bilingual README", async ({
     fullPage: true,
     animations: "disabled",
   });
+  await page
+    .getByRole("combobox", { name: "语言", exact: true })
+    .selectOption("en");
+  await page.screenshot({
+    path: "docs/screenshots/publish-en.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page
+    .getByRole("combobox", { name: "Language", exact: true })
+    .selectOption("zh-CN");
   await page.getByRole("link", { name: "Broker 配置", exact: true }).click();
   await expect(page.getByLabel("重传队列长度", { exact: false })).toHaveValue(
     /\d+/,
@@ -74,6 +106,14 @@ test("capture real broker screens for the bilingual README", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
     path: "docs/screenshots/mobile.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page
+    .getByRole("combobox", { name: "语言", exact: true })
+    .selectOption("en");
+  await page.screenshot({
+    path: "docs/screenshots/mobile-en.png",
     fullPage: true,
     animations: "disabled",
   });

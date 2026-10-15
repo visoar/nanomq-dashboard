@@ -1,6 +1,7 @@
 "use client";
 import { AlertCircle, Inbox, X } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef } from "react";
+import { useI18n } from "@/context/language";
 
 export function Panel({
   title,
@@ -34,11 +35,12 @@ export function Empty({
   title?: string;
   text?: string;
 }) {
+  const { t } = useI18n();
   return (
     <div className="empty">
       <Inbox size={28} />
-      <h3>{title}</h3>
-      <p>{text}</p>
+      <h3>{t(title)}</h3>
+      <p>{t(text)}</p>
     </div>
   );
 }
@@ -76,6 +78,7 @@ export function PageTitle({
   );
 }
 export function Status({ state }: { state: string }) {
+  const { t } = useI18n();
   return (
     <span
       className={`badge ${state === "connected" || state === "Running" ? "green" : "neutral"}`}
@@ -83,12 +86,12 @@ export function Status({ state }: { state: string }) {
       <i />
       {(
         {
-          connected: "在线",
-          disconnected: "离线",
-          idle: "空闲",
-          Running: "运行中",
+          connected: t("在线"),
+          disconnected: t("离线"),
+          idle: t("空闲"),
+          Running: t("运行中"),
         } as Record<string, string>
-      )[state] || state}
+      )[state] || t(state)}
     </span>
   );
 }
@@ -124,6 +127,7 @@ export function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const titleId = useId();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -134,11 +138,11 @@ export function Modal({
   return (
     <dialog ref={ref} onCancel={onClose} aria-labelledby={titleId}>
       <div className="modal-heading">
-        <h2 id={titleId}>{title}</h2>
+        <h2 id={titleId}>{t(title)}</h2>
         <button
           type="button"
           className="icon-button"
-          aria-label="关闭"
+          aria-label={t("关闭")}
           onClick={onClose}
         >
           <X size={19} />
@@ -159,11 +163,16 @@ export function Pagination({
   size: number;
   onPage: (n: number) => void;
 }) {
+  const { t } = useI18n();
   const pages = Math.max(1, Math.ceil(count / size));
   return (
     <div className="pagination">
       <span>
-        共 {number(count)} 条 · 第 {page} / {pages} 页
+        {t("共 {count} 条 · 第 {page} / {pages} 页", {
+          count: number(count),
+          page,
+          pages,
+        })}
       </span>
       <div>
         <button
@@ -172,7 +181,7 @@ export function Pagination({
           disabled={page <= 1}
           onClick={() => onPage(page - 1)}
         >
-          上一页
+          {t("上一页")}
         </button>
         <button
           type="button"
@@ -180,7 +189,7 @@ export function Pagination({
           disabled={page >= pages}
           onClick={() => onPage(page + 1)}
         >
-          下一页
+          {t("下一页")}
         </button>
       </div>
     </div>

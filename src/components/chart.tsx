@@ -1,5 +1,6 @@
 "use client";
 import type { Sample } from "@/context/dashboard";
+import { useI18n } from "@/context/language";
 import { number } from "./ui";
 export function LineChart({
   samples,
@@ -12,6 +13,7 @@ export function LineChart({
   label: string;
   percent?: boolean;
 }) {
+  const { t, locale } = useI18n();
   const values = samples.flatMap((s) =>
     series.map((v) => s.metrics[v.key]).filter((v) => v !== undefined),
   );
@@ -92,7 +94,9 @@ export function LineChart({
             fontSize="10"
           >
             {start
-              ? new Date(start + f * (end - start)).toLocaleTimeString("en-GB")
+              ? new Date(start + f * (end - start)).toLocaleTimeString(locale, {
+                  hour12: false,
+                })
               : "—"}
           </text>
         ))}
@@ -104,7 +108,7 @@ export function LineChart({
             fill="var(--muted)"
             fontSize="12"
           >
-            等待至少两个有效采样点…
+            {t("等待至少两个有效采样点…")}
           </text>
         )}
       </svg>

@@ -3,6 +3,7 @@ import { GitBranch, Pencil, Power, RefreshCw, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { Empty, Modal, Notice, PageTitle, Panel } from "@/components/ui";
+import { useI18n } from "@/context/language";
 import { message, mutate } from "@/lib/api";
 import {
   type Bridge,
@@ -13,6 +14,7 @@ import { useResource } from "@/lib/use-resource";
 
 type Operation = { bridge: Bridge; path: string; title: string; body: unknown };
 export default function Bridges() {
+  const { t, errorText } = useI18n();
   const {
     data,
     loading,
@@ -66,28 +68,28 @@ export default function Bridges() {
   return (
     <>
       <PageTitle
-        title="MQTT 桥接"
+        title={t("MQTT 桥接")}
         action={
           <button type="button" className="button" onClick={reload}>
             <RefreshCw size={15} />
-            刷新
+            {t("刷新")}
           </button>
         }
       />
-      {loadError && <Notice error>{loadError}</Notice>}
+      {loadError && <Notice error>{errorText(loadError)}</Notice>}
       <Panel>
         {loading ? (
-          <Empty title="正在读取桥接" text="" />
+          <Empty title={t("正在读取桥接")} text="" />
         ) : data?.bridge.nodes.length ? (
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>名称</th>
-                  <th>远端 Broker</th>
-                  <th>状态</th>
-                  <th>转发 / 订阅</th>
-                  <th>操作</th>
+                  <th>{t("名称")}</th>
+                  <th>{t("远端 Broker")}</th>
+                  <th>{t("状态")}</th>
+                  <th>{t("转发 / 订阅")}</th>
+                  <th>{t("操作")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -103,7 +105,7 @@ export default function Bridges() {
                       <span
                         className={`badge ${bridge.enable ? "green" : "neutral"}`}
                       >
-                        {bridge.enable ? "已启用" : "已停用"}
+                        {bridge.enable ? t("已启用") : t("已停用")}
                       </span>
                     </td>
                     <td>
@@ -115,7 +117,9 @@ export default function Bridges() {
                         <button
                           type="button"
                           className="icon-button"
-                          aria-label={`管理桥接订阅 ${bridge.name}`}
+                          aria-label={t("管理桥接订阅 {name}", {
+                            name: bridge.name,
+                          })}
                           onClick={() => {
                             setManaging(bridge);
                             setError("");
@@ -125,7 +129,9 @@ export default function Bridges() {
                         </button>
                         <Link
                           className="icon-button"
-                          aria-label={`编辑桥接配置 ${bridge.name}`}
+                          aria-label={t("编辑桥接配置 {name}", {
+                            name: bridge.name,
+                          })}
                           href="/configuration/file"
                         >
                           <Pencil size={15} />
@@ -133,12 +139,17 @@ export default function Bridges() {
                         <button
                           type="button"
                           className="icon-button"
-                          aria-label={`${bridge.enable ? "停用" : "启用"}桥接 ${bridge.name}`}
+                          aria-label={t(
+                            bridge.enable
+                              ? "停用桥接 {name}"
+                              : "启用桥接 {name}",
+                            { name: bridge.name },
+                          )}
                           onClick={() => {
                             setError("");
                             setPending({
                               bridge,
-                              title: `${bridge.enable ? "停用" : "启用"}桥接`,
+                              title: bridge.enable ? "停用桥接" : "启用桥接",
                               path: `/bridges/switch/${encodeURIComponent(bridge.name)}`,
                               body: { data: { bridge_switch: !bridge.enable } },
                             });
@@ -155,17 +166,17 @@ export default function Bridges() {
           </div>
         ) : (
           <Empty
-            title="尚未配置桥接"
-            text="请在 Broker 配置文件中添加 bridges.mqtt 节点。"
+            title={t("尚未配置桥接")}
+            text={t("请在 Broker 配置文件中添加 bridges.mqtt 节点。")}
           />
         )}
       </Panel>
       {managing && !pending && (
         <Modal
-          title={`桥接订阅 ${managing.name}`}
+          title={t("桥接订阅 {name}", { name: managing.name })}
           onClose={() => setManaging(null)}
         >
-          {error && <Notice error>{error}</Notice>}
+          {error && <Notice error>{errorText(error)}</Notice>}
           {managing.subscription?.map((item) => (
             <div className="subscription-row" key={String(item.remote_topic)}>
               <div>
@@ -177,7 +188,9 @@ export default function Bridges() {
               <button
                 type="button"
                 className="icon-button danger-text"
-                aria-label={`取消桥接订阅 ${String(item.remote_topic)}`}
+                aria-label={t("取消桥接订阅 {topic}", {
+                  topic: String(item.remote_topic),
+                })}
                 onClick={() => {
                   setError("");
                   setPending({
@@ -196,11 +209,11 @@ export default function Bridges() {
           ))}
           <form onSubmit={subscribe} className="bridge-subscribe-form">
             <label>
-              远端主题
+              {t("远端主题")}
               <input name="remote" required />
             </label>
             <label>
-              本地主题
+              {t("本地主题")}
               <input name="local" required />
             </label>
             <label>
@@ -213,7 +226,7 @@ export default function Bridges() {
             </label>
             <div className="modal-actions">
               <button type="submit" className="button primary">
-                添加桥接订阅
+                {t("添加桥接订阅")}
               </button>
             </div>
           </form>
@@ -221,13 +234,13 @@ export default function Bridges() {
       )}
       {pending && (
         <Modal
-          title={`${pending.title} ${pending.bridge.name}`}
+          title={`${t(pending.title)} ${pending.bridge.name}`}
           onClose={() => {
             if (!busy) setPending(null);
           }}
         >
-          {error && <Notice error>{error}</Notice>}
-          <p>确认更新桥接连接？</p>
+          {error && <Notice error>{errorText(error)}</Notice>}
+          <p>{t("确认更新桥接连接？")}</p>
           <pre>{JSON.stringify(pending.body, null, 2)}</pre>
           <div className="modal-actions">
             <button
@@ -236,7 +249,7 @@ export default function Bridges() {
               disabled={busy}
               onClick={() => setPending(null)}
             >
-              取消
+              {t("取消")}
             </button>
             <button
               type="button"
@@ -246,7 +259,7 @@ export default function Bridges() {
                 void execute();
               }}
             >
-              {busy ? "提交中…" : "确认"}
+              {busy ? t("提交中…") : t("确认")}
             </button>
           </div>
         </Modal>

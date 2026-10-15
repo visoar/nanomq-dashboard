@@ -127,7 +127,7 @@ test("reads live subscriptions and the topic tree", async ({ page }) => {
     .fill("factory/line-1/telemetry");
   await expect(page.locator("tbody tr")).toHaveCount(1);
   await page.getByRole("button", { name: "主题层级", exact: true }).click();
-  await expect(page.getByText("(root)", { exact: true })).toBeVisible();
+  await expect(page.getByText("根主题", { exact: true })).toBeVisible();
 });
 test("persists hot configuration and verifies the broker readback", async ({
   page,
